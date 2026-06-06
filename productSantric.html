@@ -1,0 +1,435 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no">
+<title>VEXIS — Product Santric</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:ital,wght@0,300;0,400;1,300&family=Syne:wght@700;800&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box;}
+:root{
+  --bg:#050505;--w:#d8d8d8;--silver:#a8a8a8;
+  --box:rgba(4,4,4,.85);--border:rgba(255,255,255,.06);
+  --mono:'DM Mono',monospace;--tech:'Syne',sans-serif;
+}
+html{scroll-behavior:smooth;}
+body{background:var(--bg);color:var(--w);overflow-x:hidden;font-family:var(--mono);}
+@media(pointer:fine){body{cursor:none;}}
+
+#cur,#curR{display:none;}
+@media(pointer:fine){
+  #cur{display:block;position:fixed;z-index:9999;width:5px;height:5px;background:var(--silver);border-radius:50%;pointer-events:none;transform:translate(-50%,-50%);}
+  #curR{display:block;position:fixed;z-index:9998;width:20px;height:20px;border:1px solid rgba(168,168,168,.2);border-radius:50%;pointer-events:none;transform:translate(-50%,-50%);}
+}
+#scanline{position:fixed;inset:0;z-index:80;pointer-events:none;background:repeating-linear-gradient(to bottom,transparent 0,transparent 3px,rgba(0,0,0,.018) 3px,rgba(0,0,0,.018) 4px);}
+
+/* ══ NAVIGATION ══ */
+#nav-vexis{
+  position:fixed;top:18px;left:18px;z-index:600;
+  font-family:var(--mono);font-size:8px;letter-spacing:.18em;text-transform:uppercase;
+  color:rgba(210,210,210,.75);text-decoration:none;
+  background:rgba(6,6,6,.92);padding:8px 16px;
+  border-radius:100px;border:1px solid rgba(200,200,200,.18);
+  backdrop-filter:blur(14px);transition:color .2s;
+}
+#nav-vexis:hover{color:#e0e0e0;}
+#nav-close{
+  position:fixed;top:14px;right:16px;z-index:600;
+  width:38px;height:38px;display:flex;align-items:center;justify-content:center;
+  color:rgba(210,210,210,.7);font-size:18px;line-height:1;
+  border:1px solid rgba(200,200,200,.2);border-radius:50%;
+  background:rgba(6,6,6,.92);backdrop-filter:blur(14px);
+  cursor:pointer;transition:color .2s;
+}
+#nav-close:hover{color:#e0e0e0;}
+#nav-bottom{
+  position:fixed;bottom:18px;left:50%;transform:translateX(-50%);
+  z-index:600;display:flex;align-items:center;
+  background:rgba(6,6,6,.92);backdrop-filter:blur(14px);
+  border:1px solid rgba(200,200,200,.12);border-radius:100px;overflow:hidden;
+}
+.nav-btn{
+  display:inline-flex;align-items:center;gap:4px;
+  font-family:var(--mono);font-size:9px;letter-spacing:.14em;text-transform:uppercase;
+  color:rgba(200,200,200,.35);text-decoration:none;padding:9px 18px;
+  background:none;border:none;transition:color .2s;white-space:normal;
+}
+.nav-btn:hover{color:rgba(200,200,200,.9);}
+.nav-sep{width:1px;height:16px;background:rgba(200,200,200,.1);flex-shrink:0;}
+
+/* ══ 1. VIDEO ══ */
+.sec-video{position:relative;height:100vh;overflow:clip;background:#050505;}
+.sec-video video{
+  position:absolute;inset:0;width:100%;height:100%;
+  object-fit:cover;border:none;z-index:1;pointer-events:none;
+}
+.sec-video::after{content:'';position:absolute;inset:0;z-index:2;background:linear-gradient(to bottom,rgba(5,5,5,.15) 0%,rgba(5,5,5,.04) 35%,rgba(5,5,5,.5) 80%,rgba(5,5,5,.98) 100%);pointer-events:none;}
+.scroll-hint{position:absolute;bottom:68px;left:50%;transform:translateX(-50%);z-index:10;display:flex;flex-direction:column;align-items:center;gap:6px;font-size:7px;letter-spacing:.22em;text-transform:uppercase;color:rgba(216,216,216,.16);animation:sh 2.5s ease-in-out infinite;}
+.sh-line{width:1px;height:22px;background:linear-gradient(to bottom,var(--silver),transparent);}
+@keyframes sh{0%,100%{opacity:.3;transform:translateX(-50%) translateY(0);}50%{opacity:.7;transform:translateX(-50%) translateY(5px);}}
+
+/* ══ 2. INFO ══ */
+.sec-info{position:relative;padding:22vh 28px 22vh;overflow:hidden;}
+@media(max-width:560px){.sec-info{padding:15vh 14px 15vh;}}
+.info-bg{position:absolute;inset:-5%;z-index:0;
+  background-image:url('images/productSantric/new-project%20(4).png');
+  background-size:cover;background-position:center;
+  will-change:transform;transition:transform .12s ease-out;}
+.info-bg::after{content:'';position:absolute;inset:0;background:rgba(5,5,5,.80);}
+.info-overlay{position:absolute;inset:0;background:rgba(5,5,5,.4);z-index:1;}
+.info-inner{position:relative;z-index:10;display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;align-items:start;}
+@media(max-width:900px){.info-inner{grid-template-columns:1fr 1fr;gap:12px;}.panel-center{display:none;}}
+@media(max-width:560px){.info-inner{grid-template-columns:1fr;}}
+.panel-left,.panel-right{display:flex;flex-direction:column;}
+.panel-center{display:flex;align-items:center;justify-content:center;}
+.panel-label{font-family:var(--mono);font-size:7px;letter-spacing:.3em;text-transform:uppercase;color:rgba(216,216,216,.1);margin-bottom:18px;}
+.tb{margin-bottom:10px;opacity:0;transition:opacity .55s ease,transform .55s ease;}
+.panel-left .tb{transform:translateX(-50px);}
+.panel-right .tb{transform:translateX(50px);}
+.tb.visible{opacity:1;transform:translateX(0);}
+.tb.gone-past{opacity:0;}
+.panel-left .tb.gone-past{transform:translateX(-50px);}
+.panel-right .tb.gone-past{transform:translateX(50px);}
+.tb-box{background:var(--box);backdrop-filter:blur(10px);border:1px solid var(--border);padding:13px 15px;}
+.tb-num{font-family:var(--mono);font-size:7px;letter-spacing:.2em;color:rgba(168,168,168,.26);margin-bottom:4px;}
+.tb-label{font-family:var(--tech);font-weight:700;font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:rgba(216,216,216,.52);margin-bottom:6px;}
+.tb-body{font-family:var(--mono);font-size:10px;line-height:1.85;color:rgba(216,216,216,.24);font-style:italic;}
+.wm{font-family:'Courier New',monospace;font-size:clamp(28px,3.5vw,56px);letter-spacing:.04em;text-transform:uppercase;color:rgba(216,216,216,.022);line-height:1.1;text-align:center;user-select:none;pointer-events:none;}
+
+/* ══ 3. IMAGES ══ */
+.sec-images{position:relative;background:var(--bg);}
+.img-full{width:100%;height:auto;overflow:hidden;position:relative;}
+.img-full img{width:100%;height:100%;object-fit:cover;display:block;opacity:0;transform:scale(1.04);transition:opacity .8s ease,transform 1.2s ease;}
+.img-full img.visible{opacity:1;transform:scale(1);}
+.img-two{display:grid;grid-template-columns:1fr 1fr;gap:2px;}
+.img-two-cell{overflow:hidden;aspect-ratio:4/3;}
+.img-two-cell img{width:100%;height:100%;object-fit:cover;display:block;opacity:0;transform:scale(1.04);transition:opacity .8s ease,transform 1.2s ease;}
+.img-two-cell img.visible{opacity:1;transform:scale(1);}
+.img-asym{display:grid;grid-template-columns:2fr 1fr;gap:2px;}
+.img-asym-cell{overflow:hidden;height:auto;}
+.img-asym-cell img{width:100%;height:100%;object-fit:cover;display:block;opacity:0;transform:scale(1.04);transition:opacity .8s ease,transform 1.2s ease;}
+.img-asym-cell img.visible{opacity:1;transform:scale(1);}
+@media(max-width:560px){
+  .img-two,.img-asym{grid-template-columns:1fr;}
+  .img-full{height:auto;}
+  .img-asym-cell{height:auto;}
+}
+
+/* ══ 4. OUTRO ══ */
+.sec-outro{position:relative;min-height:100vh;display:flex;flex-direction:column;justify-content:center;align-items:center;overflow:hidden;background:var(--bg);}
+.outro-bg{position:absolute;inset:0;background:radial-gradient(ellipse 60% 60% at 50% 50%,#050505 0%,#050505 70%);z-index:0;}
+.outro-title{position:relative;z-index:1;font-family:var(--tech);font-weight:800;font-size:clamp(28px,5.5vw,80px);letter-spacing:-.02em;text-transform:uppercase;color:rgba(216,216,216,.06);line-height:1;text-align:center;white-space:normal;opacity:0;transform:translateY(20px);transition:opacity 1s ease,transform 1s ease;}
+.outro-title.visible{opacity:1;transform:translateY(0);}
+.outro-title .line2{-webkit-text-stroke:1px rgba(216,216,216,.12);color:transparent;}
+.outro-year{position:relative;z-index:1;font-family:var(--mono);font-size:9px;letter-spacing:.3em;text-transform:uppercase;color:rgba(216,216,216,.15);margin-top:32px;opacity:0;transition:opacity .8s ease .4s;}
+.outro-year.visible{opacity:1;}
+
+/* ══ VIDEO LOADER ══ */
+.video-loader{
+  position:absolute;inset:0;z-index:5;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  background:#050505;pointer-events:none;transition:opacity .8s ease;
+}
+.video-loader.hidden{opacity:0;}
+.vl-text{font-family:var(--mono);font-size:8px;letter-spacing:.28em;text-transform:uppercase;color:rgba(200,200,200,.18);margin-bottom:22px;animation:vl-flicker 1.6s ease-in-out infinite;}
+.vl-bar{width:80px;height:1px;background:rgba(200,200,200,.08);position:relative;overflow:hidden;}
+.vl-bar::after{content:'';position:absolute;left:-100%;top:0;height:100%;width:100%;background:linear-gradient(90deg,transparent,rgba(200,200,200,.4),transparent);animation:vl-sweep 1.4s ease-in-out infinite;}
+@keyframes vl-flicker{0%,100%{opacity:.18;}40%{opacity:.55;}60%{opacity:.22;}80%{opacity:.5;}}
+@keyframes vl-sweep{0%{left:-100%;}100%{left:100%;}}
+
+
+
+
+
+
+
+/* Tablet */
+@media(max-width:900px) and (min-width:769px){
+  .sec-info{ padding:15vh 40px 15vh !important; }
+  .info-inner{ grid-template-columns:1fr 1fr !important; }
+  .panel-center{ display:none !important; }
+}
+
+
+/* ═══════════════════════════════════════════════════
+   FLUID DESIGN SYSTEM
+   8pt grid · clamp() · dvh/svh · aspect-ratio
+   ═══════════════════════════════════════════════════ */
+:root{
+  --sp-2:  clamp(8px,  1vw,   16px);
+  --sp-4:  clamp(16px, 2vw,   32px);
+  --sp-6:  clamp(24px, 3vw,   48px);
+  --sp-8:  clamp(32px, 4vw,   64px);
+  --sp-12: clamp(48px, 6vw,   96px);
+  --sp-16: clamp(64px, 8vw,  128px);
+  --content-max: 1200px;
+  --page-pad: clamp(20px, 5vw, 120px);
+}
+.sec-info,.sec-process,.sec-outro,.sec-case,.sec-proto{
+  padding-top:    clamp(64px,14vh,160px);
+  padding-bottom: clamp(64px,14vh,160px);
+  padding-left:   var(--page-pad);
+  padding-right:  var(--page-pad);
+}
+.info-inner,.process-inner,.insights-grid{
+  max-width: var(--content-max);
+  margin: 0 auto;
+}
+.outro-title{
+  font-size: clamp(56px,10vw,140px);
+  line-height: 0.95;
+  letter-spacing: -0.02em;
+}
+.sec-hero,.sec-video{ min-height:100dvh; height:100dvh; }
+.img-full{ width:100%; height:auto; overflow:hidden; }
+.img-full img{ width:100%; height:auto; display:block; object-fit:cover; object-position:center; }
+.img-two{ display:grid; grid-template-columns:1fr 1fr; gap:2px; }
+.img-two-cell{ aspect-ratio:4/3; overflow:hidden; }
+.img-two-cell img{ width:100%; height:100%; object-fit:cover; object-position:center; display:block; }
+.img-asym{ display:grid; grid-template-columns:2fr 1fr; gap:2px; }
+.img-asym-cell{ aspect-ratio:3/2; overflow:hidden; }
+.img-asym-cell img{ width:100%; height:100%; object-fit:cover; object-position:center; display:block; }
+@media(max-width:1024px){
+  .info-inner,.process-inner{ grid-template-columns:1fr 1fr !important; }
+  .panel-center{ display:none !important; }
+}
+@media(max-width:768px){
+  .sec-info,.sec-process,.sec-outro,.sec-case,.sec-proto{
+    padding-top:    clamp(48px,10svh,80px) !important;
+    padding-bottom: clamp(48px,10svh,80px) !important;
+    padding-left:   20px !important;
+    padding-right:  20px !important;
+  }
+  .hero-title,.hero-title-main,.outro-title,.hero-eyebrow{
+    word-break:keep-all !important;
+    overflow-wrap:normal !important;
+    hyphens:none !important;
+  }
+  .outro-title{
+    font-size:clamp(28px,9svw,52px) !important;
+    line-height:1.0 !important;
+  }
+  .img-full{ height:auto !important; }
+  .img-full img{ height:auto !important; aspect-ratio:16/9; object-fit:cover !important; object-position:center !important; }
+  .img-two{ grid-template-columns:1fr !important; }
+  .img-two-cell{ aspect-ratio:4/3 !important; height:auto !important; }
+  .img-asym{ grid-template-columns:1fr !important; }
+  .img-asym-cell{ aspect-ratio:4/3 !important; height:auto !important; }
+  .sec-video iframe{ display:none !important; }
+  .mob-poster{ display:block !important; }
+  .sec-hero,.sec-video{ min-height:100svh !important; height:100svh !important; }
+  .info-inner{ grid-template-columns:1fr !important; gap:var(--sp-4) !important; }
+}
+
+
+
+
+
+/* ── Nav bottom mobile fix ───────────────────────── */
+@media(max-width:768px){
+  #nav-bottom{
+    left: 50% !important;
+    right: auto !important;
+    transform: translateX(-50%) !important;
+    max-width: min(360px, calc(100vw - 32px)) !important;
+    width: max-content !important;
+    box-sizing: border-box !important;
+  }
+  .nav-btn, #nav-bottom .nav-btn{
+    font-size: 8px !important;
+    letter-spacing: .06em !important;
+    padding: 10px 12px !important;
+    white-space: nowrap !important;
+  }
+}
+
+</style>
+</head>
+<body>
+
+<div id="cur"></div>
+<div id="curR"></div>
+<div id="scanline"></div>
+
+<a id="nav-vexis" href="index.html">VE<span style="opacity:.65">X</span>IS</a>
+<button id="nav-close">&#215;</button>
+<div id="nav-bottom">
+  <a class="nav-btn" href="porsche.html">← Prev</a>
+  <div class="nav-sep"></div>
+  <a class="nav-btn" href="xlab.html">Next →</a>
+</div>
+
+<!-- 1. VIDEO -->
+<section class="sec-video">
+  <video autoplay muted loop playsinline id="hero-video">
+    <source src="images/productSantric/a_slow-motion_low-angle_tracking_shot_through_the_dark_moss-covered_forest_floor_the_only_light_com_2ltjkzqcsn5vsihr2cko_1.mp4" type="video/mp4">
+  </video>
+  <div class="video-loader" id="vl">
+    <div class="vl-text">loading</div>
+    <div class="vl-bar"></div>
+  </div>
+</section>
+
+<!-- 2. INFO -->
+<section class="sec-info">
+  <div class="info-bg" id="info-bg"></div>
+  <div class="info-overlay"></div>
+  <div class="info-inner">
+
+    <div class="panel-left">
+      <div class="panel-label">Overview</div>
+      <div class="tb"><div class="tb-box">
+        <div class="tb-num">01</div>
+        <div class="tb-label">Concept</div>
+        <div class="tb-body">A product visual identity that exists at the threshold between the organic and the synthetic — where material texture meets digital precision in a single unified language.</div>
+      </div></div>
+      <div class="tb"><div class="tb-box">
+        <div class="tb-num">02</div>
+        <div class="tb-label">Approach</div>
+        <div class="tb-body">AI-generated imagery and motion capture the essence of the product — not through documentation but through atmosphere. Each frame is a mood, a proposition, a world.</div>
+      </div></div>
+      <div class="tb"><div class="tb-box">
+        <div class="tb-num">03</div>
+        <div class="tb-label">Role</div>
+        <div class="tb-body">Creative Direction · AI Image Generation · Visual Identity · Motion</div>
+      </div></div>
+    </div>
+
+    <div class="panel-center">
+      <div class="wm">PRODUCT<br>SANTRIC</div>
+    </div>
+
+    <div class="panel-right">
+      <div class="tb"><div class="tb-box">
+        <div class="tb-num">04</div>
+        <div class="tb-label">Aesthetic</div>
+        <div class="tb-body">Dark forest. Bioluminescent light breaking through canopy. Product as artifact — ancient and futuristic simultaneously. The visual language dissolves the boundary between nature and object.</div>
+      </div></div>
+      <div class="tb"><div class="tb-box">
+        <div class="tb-num">05</div>
+        <div class="tb-label">Output</div>
+        <div class="tb-body">Campaign visuals, motion studies, and a complete art direction system designed to live across digital and physical surfaces.</div>
+      </div></div>
+      <div class="tb"><div class="tb-box">
+        <div class="tb-num">06</div>
+        <div class="tb-label">Context</div>
+        <div class="tb-body">Product Visual Identity · 2026</div>
+      </div></div>
+    </div>
+
+  </div>
+</section>
+
+<!-- 3. IMAGES -->
+<section class="sec-images">
+
+  <div class="img-full">
+    <img src="images/productSantric/new-project%20(4).png" alt="">
+  </div>
+
+  <div class="img-two">
+    <div class="img-two-cell"><img src="images/productSantric/new-project%20(6).png" alt=""></div>
+    <div class="img-two-cell"><img src="images/productSantric/new-project%20(7).png" alt=""></div>
+  </div>
+
+  <div class="img-asym">
+    <div class="img-asym-cell"><img src="images/productSantric/new-project%20(8).png" alt=""></div>
+    <div class="img-asym-cell"><img src="images/productSantric/new-project%20(9).png" alt=""></div>
+  </div>
+
+  <div class="img-two">
+    <div class="img-two-cell"><img src="images/productSantric/new-project%20(10).png" alt=""></div>
+    <div class="img-two-cell"><img src="images/productSantric/new-project%20(11).png" alt=""></div>
+  </div>
+
+  <div class="img-full">
+    <img src="images/productSantric/new-project%20(12).png" alt="">
+  </div>
+
+</section>
+
+<!-- 4. OUTRO -->
+<section class="sec-outro">
+  <div class="outro-bg"></div>
+  <div class="outro-title"><span>PRODUCT</span>&nbsp;<span class="line2">SANTRIC</span></div>
+  <div class="outro-year">Visual Identity · 2026</div>
+</section>
+
+<script>
+// NAVIGATION
+function goBack(){
+  const saved=sessionStorage.getItem('vexis-scroll')||'0';
+  sessionStorage.setItem('vexis-restore',saved);
+  window.location.href='index.html';
+}
+function goToProject(){
+  const saved=sessionStorage.getItem('vexis-scroll')||'0';
+  sessionStorage.setItem('vexis-restore',saved);
+  sessionStorage.setItem('vexis-open-project','true');
+  window.location.href='index.html';
+}
+document.getElementById('nav-vexis').addEventListener('click',function(e){e.preventDefault();goBack();});
+document.getElementById('nav-close').addEventListener('click',goToProject);
+
+// CURSOR
+const cur=document.getElementById('cur'),curR=document.getElementById('curR');
+if(window.matchMedia('(pointer:fine)').matches){
+  document.addEventListener('mousemove',e=>{
+    cur.style.left=e.clientX+'px';cur.style.top=e.clientY+'px';
+    setTimeout(()=>{curR.style.left=e.clientX+'px';curR.style.top=e.clientY+'px';},55);
+    tiltBg(e);
+  });
+}
+const infoBg=document.getElementById('info-bg');
+function tiltBg(e){
+  const cx=window.innerWidth/2,cy=window.innerHeight/2;
+  const dx=(e.clientX-cx)/cx,dy=(e.clientY-cy)/cy;
+  infoBg.style.transform='translate('+(dx*12)+'px,'+(dy*8)+'px) scale(1.05)';
+}
+
+// SCROLL ANIMATIONS
+function updateAll(){
+  const vH=window.innerHeight;
+  document.querySelectorAll('.tb').forEach(tb=>{
+    const r=tb.getBoundingClientRect();
+    const inView=r.top<vH*.88&&r.bottom>vH*.12;
+    const above=r.bottom<=vH*.12;
+    if(inView){tb.classList.add('visible');tb.classList.remove('gone-past');}
+    else if(above){tb.classList.remove('visible');tb.classList.add('gone-past');}
+    else{tb.classList.remove('visible','gone-past');}
+  });
+  document.querySelectorAll('.img-full img,.img-two-cell img,.img-asym-cell img').forEach(img=>{
+    const r=img.getBoundingClientRect();
+    if(r.top<vH*.92&&r.bottom>0){img.classList.add('visible');}
+    else{img.classList.remove('visible');}
+  });
+  document.querySelectorAll('.outro-title,.outro-year').forEach(el=>{
+    const r=el.getBoundingClientRect();
+    if(r.top<vH*.85){el.classList.add('visible');}
+    else{el.classList.remove('visible');}
+  });
+}
+window.addEventListener('scroll',updateAll,{passive:true});
+updateAll();
+</script>
+
+<script>
+  // Video loader
+  (function(){
+    var loader = document.getElementById('vl');
+    var video = document.getElementById('hero-video');
+    if(!loader || !video) return;
+    var hidden = false;
+    function hideLoader(){
+      if(hidden) return;
+      hidden = true;
+      loader.classList.add('hidden');
+      setTimeout(function(){ loader.style.display='none'; }, 900);
+    }
+    video.addEventListener('canplay', hideLoader);
+    video.addEventListener('playing', hideLoader);
+    setTimeout(hideLoader, 5000);
+  })();
+</script>
+</body>
+</html>
